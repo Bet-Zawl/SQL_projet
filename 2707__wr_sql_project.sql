@@ -430,7 +430,7 @@ WITH produit_commande_par_client AS (
 	)
 SELECT *
 FROM produit_commande_par_client
-WHERE produit_commande <= 3
+WHERE produit_commande >= 3
 
  --Q52 Avec 2 CTEs; CA par catégorie, puis afficher uniquement les catégories dans le top 3
 

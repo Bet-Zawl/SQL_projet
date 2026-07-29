@@ -140,31 +140,64 @@ VALUES (42, 'Alice', 'Electronique', -25, -12); --OK
 
 -- Q26 — Lister tous les index créés sur les tables du schéma public
 
-
-
--- Q26 — Lister tous les index créés sur les tables du schéma public
-
+SELECT
+    tablename,
+    indexname,
+    indexdef
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename, indexname;
 
 
 -- Q27 — Lister toutes les contraintes sur les 4 tables
 
+SELECT
+    c.conname,
+    t.relname AS table_name,
+    c.contype,
+    pg_get_constraintdef(c.oid)
+FROM pg_constraint c
+JOIN pg_class t ON t.oid = c.conrelid
+JOIN pg_namespace n ON n.oid = t.relnamespace
+WHERE n.nspname = 'public'
+ORDER BY t.relname, c.conname;
 
 
 -- Q28 — Vérifier les privilèges accordés aux rôles ecommerce_readonly et ecommerce_engineer
 
 
+SELECT
+    n.nspname AS schema_name,
+    c.relname AS object_name,
+    c.relkind AS object_type,
+    pg_roles.rolname AS grantee,
+    c.relacl AS raw_acl,
+    pg_catalog.array_to_string(c.relacl, E'\n') AS acl_text
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+LEFT JOIN pg_roles ON pg_roles.rolname IN ('ecommerce_readonly', 'ecommerce_engineer')
+WHERE n.nspname = 'public'
+  AND c.relacl IS NOT NULL
+  AND (
+        pg_catalog.array_to_string(c.relacl, ' ') LIKE '%ecommerce_readonly%'
+     OR pg_catalog.array_to_string(c.relacl, ' ') LIKE '%ecommerce_engineer%')
+ORDER BY object_type, object_name;
 
  
 -- SAUVEGARDE (à exécuter dans le terminal)
- 
+
+-- ecommerce_readonly=r/postgres
+-- ecommerce_engineer=arwdDxt/postgres
 
 -- Q29 — Faire un dump compressé de la base de données
 -- Commande à exécuter dans le terminal :
 
+-- pg_dump -U postgres -F p ecommerce_db | gzip > dump.sql.gz
 
 
 -- Q30 — Faire un dump SQL lisible de la base de données
 -- Commande à exécuter dans le terminal :
 
+--pg_dump -U <analyste_user> -h <hôte> -p <port> -F p <sqlproject> <nom_dump>.sql
 
 
